@@ -1,0 +1,123 @@
+@startuml
+!include <C4/C4_Container>
+
+title Диаграмма контейнеров системы "Кинобездна" (упрощенная)
+
+Person(user, "Пользователь", "веб/мобильное приложение/smartTV")
+
+System_Boundary(system, "Кинобездна") {
+    Container(api_gateway, "API Gateway", "Единая точка входа, маршрутизация, аутентификация")
+    
+    ' Основные сервисы
+    Container(user_service, "Сервис пользователей", "Управление аккаунтами, аутентификация")
+    Container(subscription_service, "Сервис подписок", "Управление подписками, проверка доступа")
+    Container(movies_service, "Сервис фильмов", "Метаданные фильмов, поиск, кэширование")
+    Container(payments_service, "Сервис платежей", "Обработка платежей, биллинг")
+    Container(analytics_service, "Сервис аналитики", "Сбор статистики, рекомендации")
+    
+    ' Базы данных
+    ContainerDb(user_db, "PostgreSQL", "СУБД", "БД пользователей и профилей")
+    ContainerDb(subscription_db, "PostgreSQL", "СУБД", "БД подписок и тарифов")
+    ContainerDb(movies_db, "PostgreSQL", "СУБД", "БД фильмов и метаданных")
+    ContainerDb(payments_db, "PostgreSQL", "СУБД", "БД платежей и транзакций")
+    
+    ' Кэш (использует только movies_service)
+    ContainerDb(redis_cache, "Redis", "Кэш", "Кэш данных о фильмах, поисковых запросов")
+    
+    ' Очереди сообщений
+    ContainerQueue(kafka, "Kafka", "Брокер сообщений", "Асинхронные события для аналитики")
+    
+    ' Поисковая система (использует movies_service и analytics_service)
+    ContainerDb(elasticsearch, "Elasticsearch", "Поиск", "Поисковый индекс фильмов, аналитика")
+}
+
+' Внешние клиенты
+System_Ext(mobile_app, "Мобильное приложение", "iOS/Android")
+System_Ext(web_app, "Веб-приложение", "React")
+System_Ext(tv_app, "TV приложение", "Smart TV")
+
+' Внешние системы
+System_Ext(payment, "Платежные системы", "Эквайринг, банковские интеграции")
+System_Ext(content, "Провайдеры контента", "Стриминговые сервисы, поставщики фильмов")
+System_Ext(cdn, "CDN", "Сеть доставки контента", "Стриминг видеофайлов")
+
+' ==== СВЯЗИ ====
+
+' 1. Клиенты -> API Gateway
+mobile_app --> api_gateway : "REST API"
+web_app --> api_gateway : "REST API"
+tv_app --> api_gateway : "REST API"
+
+' 2. API Gateway -> Сервисы
+api_gateway --> user_service : "HTTP/REST\nаутентификация, профили"
+api_gateway --> subscription_service : "HTTP/REST\nстатус подписки"
+api_gateway --> movies_service : "HTTP/REST\nфильмы, поиск, рекомендации"
+api_gateway --> payments_service : "HTTP/REST\nплатежи, счета"
+
+' 3. Movies Service -> Кэш, БД и поиск
+movies_service --> redis_cache : "Кэширование\nданных и запросов"
+movies_service --> movies_db : "SQL\nметаданные фильмов"
+movies_service --> elasticsearch : "Поисковые запросы,\nиндексация фильмов"
+
+' 4. Сервисы -> свои БД
+user_service --> user_db : "SQL"
+subscription_service --> subscription_db : "SQL"
+payments_service --> payments_db : "SQL"
+
+' 5. Взаимодействие сервисов
+movies_service --> subscription_service : "Проверка доступа к контенту"
+payments_service --> subscription_service : "Активация/обновление подписок"
+
+' 6. События -> Kafka
+movies_service --> kafka : "События просмотров"
+user_service --> kafka : "Действия пользователей"
+payments_service --> kafka : "События платежей"
+
+' 7. Kafka -> Аналитика
+kafka --> analytics_service : "Потребление событий\nдля аналитики"
+
+' 8. Аналитика -> Elasticsearch
+analytics_service --> elasticsearch : "Индексация аналитики\nи рекомендаций"
+
+' 9. Внешние интеграции
+payments_service --> payment : "Интеграция с платежными системами"
+movies_service --> content : "Получение метаданных и контента"
+movies_service --> cdn : "Генерация ссылок для стриминга"
+
+' 10. Аналитика -> Movies Service (рекомендации)
+analytics_service --> movies_service : "Обновление рекомендаций,\nтрендов"
+
+note right of movies_service
+  <b>Movies Service включает:</b>
+  1. Управление данными фильмов
+  2. Поиск (через Elasticsearch)
+  3. Кэширование (через Redis)
+  4. Проверку доступа к контенту
+end note
+
+note right of redis_cache
+  <b>Redis кэширует:</b>
+  • Данные о фильмах (по ID)
+  • Результаты поисковых запросов
+  • Популярный контент
+  • Рекомендации
+  TTL: 15-60 минут
+end note
+
+note right of elasticsearch
+  <b>Elasticsearch для:</b>
+  1. Полнотекстовый поиск фильмов
+  2. Фильтрация по жанрам, годам
+  3. Хранение аналитических данных
+  4. Рекомендательные системы
+end note
+
+legend right
+  |<b>Поток поиска фильма:</b>|
+  1. Запрос → Movies Service |
+  2. Проверка кэша в Redis |
+  3. Если нет → Elasticsearch |
+  4. Кэширование результата |
+  5. Возврат данных клиенту |
+end legend
+@enduml
