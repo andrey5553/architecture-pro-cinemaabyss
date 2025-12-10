@@ -11,9 +11,9 @@
 ### 1. Proxy
 Команда КиноБездны уже выделила сервис метаданных о фильмах movies и вам необходимо реализовать бесшовный переход с применением паттерна Strangler Fig в части реализации прокси-сервиса (API Gateway), с помощью которого можно будет постепенно переключать траффик, используя фиче-флаг.
 
-1. Реализован сервис событий (Event Service) на FastAPI, который выполняет две ключевые функции:
-  1.1 Приём событий через REST API (о фильмах, пользователях и платежах)
-  1.2 Асинхронная отправка этих событий в соответствующие топики Kafka
+1. Реализован прокси сервис API Gateway (Proxy Service) на C# + yarp библиотека (без динамического обновления MOVIES_MIGRATION_PERCENT),
+который позволяет переключать траффик, используя флаг.
+
   [Proxy Service](src/microservices/proxy/)
 
 2. Запущены postman тесты, их результат можно увидеть на картинке:
@@ -25,14 +25,14 @@
      ```
   - Тестируем постепенный переход, изменив переменную окружения MOVIES_MIGRATION_PERCENT в файле docker-compose.yml.
   Рассмотрены три случая 
-    1. MOVIES_MIGRATION_PERCENT = 1 
+    2.1 MOVIES_MIGRATION_PERCENT = 1 
     [Прием данных через монолит](schemas/задание2/миграция%20данных%20с%20минимальным%20трафиком%20(работаем%20через%20monolith)%20(percent=1).png)
 
-    2. MOVIES_MIGRATION_PERCENT = 50 
+    2.2 MOVIES_MIGRATION_PERCENT = 50 
     [Прием данных через монолит/микросервис](schemas/задание2/миграция%20данных%20с%20срединным%20трафиком%20(работаем%20через%20monolith)%20(percent=50).png)
     [Прием данных через монолит/микросервис](schemas/задание2/миграция%20данных%20с%20срединным%20трафиком%20(работаем%20через%20movies-service)%20(percent=50).png)
 
-    3. MOVIES_MIGRATION_PERCENT = 99
+    2.3 MOVIES_MIGRATION_PERCENT = 99
     [Прием данных через монолит](schemas/задание2/миграция%20данных%20с%20переводом%20трафика%20на%20новый%20сервис%20(работаем%20через%20movies-service)%20(percent=99).png)
 
 
@@ -57,46 +57,13 @@
 
 ### CI/CD
 
- В папке .github/worflows доработайте деплой новых сервисов proxy и events в docker-build-push.yml , чтобы api-tests при сборке отрабатывали корректно при отправке коммита в вашу новую ветку.
+В папке .github/worflows доработан деплой новых сервисов proxy и events в docker-build-push.yml, 
+api-tests при сборке отрабатывают успешно при отправке коммита в ваш репозиторий,
+докер образы сервисов также успешно создаются
 
-Нужно доработать 
-```yaml
-on:
-  push:
-    branches: [ main ]
-    paths:
-      - 'src/**'
-      - '.github/workflows/docker-build-push.yml'
-  release:
-    types: [published]
-```
-и добавить необходимые шаги в блок
-```yaml
-jobs:
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
+["Скриншот пайплайна тестов.](./schemas/задание3//1%20CI_CD%20(пайплайн%20тестов%20и%20докер%20образы).png)
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-```
-Как только сборка отработает и в github registry появятся ваши образы, можно переходить к блоку настройки Kubernetes
-Успешным результатом данного шага является "зеленая" сборка и "зеленые" тесты
-
+[Скриншот образов сервисов в github registry.](./schemas/задание3//2%20github%20registry%20образы%20сервисов.png) 
 
 ### Proxy в Kubernetes
 
