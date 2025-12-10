@@ -61,9 +61,9 @@
 api-tests при сборке отрабатывают успешно при отправке коммита в ваш репозиторий,
 докер образы сервисов также успешно создаются
 
-["Скриншот пайплайна тестов.](./schemas/задание3//1%20CI_CD%20(пайплайн%20тестов%20и%20докер%20образы).png)
+["Скриншот пайплайна тестов.](./schemas/задание3/Шаг1/1%20CI_CD%20(пайплайн%20тестов%20и%20докер%20образы).png)
 
-[Скриншот образов сервисов в github registry.](./schemas/задание3//2%20github%20registry%20образы%20сервисов.png) 
+[Скриншот образов сервисов в github registry.](./schemas/задание3/Шаг1/2%20github%20registry%20образы%20сервисов.png) 
 
 ### Proxy в Kubernetes
 
@@ -78,17 +78,17 @@ api-tests при сборке отрабатывают успешно при о�
 3. Добавлен секрет в src/kubernetes/dockerconfigsecret.yaml 
 
 #### Шаг 2
-  Доработайте src/kubernetes/event-service.yaml и src/kubernetes/proxy-service.yaml
+  Доработан src/kubernetes/event-service.yaml и src/kubernetes/proxy-service.yaml
 
   - Необходимо создать Deployment и Service 
-  - Доработайте ingress.yaml, чтобы можно было с помощью тестов проверить создание событий
-  - Выполните дальшейшие шаги для поднятия кластера:
+  - Доработан ingress.yaml, чтобы можно было с помощью тестов проверить создание событий
+  Шаги для поднятия кластера (делаем в контексте minikube):
 
   1. Создайте namespace:
   ```bash
-  kubectl apply -f src/kubernetes/namespace.yaml
+  kubectl apply -f src/kubernetes/namespace.yaml - готово
   ```
-  2. Создайте секреты и переменные
+  2. Создайте секреты и переменные - готово
   ```bash
   kubectl apply -f src/kubernetes/configmap.yaml
   kubectl apply -f src/kubernetes/secret.yaml
@@ -96,7 +96,7 @@ api-tests при сборке отрабатывают успешно при о�
   kubectl apply -f src/kubernetes/postgres-init-configmap.yaml
   ```
 
-  3. Разверните базу данных:
+  3. Разверните базу данных: - готово
   ```bash
   kubectl apply -f src/kubernetes/postgres.yaml
   ```
@@ -110,7 +110,7 @@ api-tests при сборке отрабатывают успешно при о�
   NAME         READY   STATUS    
   postgres-0   1/1     Running   
 
-  4. Разверните Kafka:
+  4. Разверните Kafka: - готово
   ```bash
   kubectl apply -f src/kubernetes/kafka/kafka.yaml
   ```
@@ -120,60 +120,43 @@ api-tests при сборке отрабатывают успешно при о�
   kubectl -n cinemaabyss logs имя_пода (например - kafka-0)
   ```
 
-  5. Разверните монолит:
+  5. Разверните монолит: - готово
   ```bash
   kubectl apply -f src/kubernetes/monolith.yaml
   ```
-  6. Разверните микросервисы:
+  6. Разверните микросервисы: - готово
   ```bash
   kubectl apply -f src/kubernetes/movies-service.yaml
   kubectl apply -f src/kubernetes/events-service.yaml
   ```
-  7. Разверните прокси-сервис:
+  7. Разверните прокси-сервис: - готово
   ```bash
   kubectl apply -f src/kubernetes/proxy-service.yaml
   ```
 
-  После запуска и поднятия подов вывод команды 
+  После запуска и поднятия подов вывод команды - готово
   ```bash
   kubectl -n cinemaabyss get pod
   ```
-
-  Будет наподобие такого
-
-  NAME                              READY   STATUS    
-
-  events-service-7587c6dfd5-6whzx   1/1     Running  
-
-  kafka-0                           1/1     Running   
-
-  monolith-8476598495-wmtmw         1/1     Running  
-
-  movies-service-6d5697c584-4qfqs   1/1     Running  
-
-  postgres-0                        1/1     Running  
-
-  proxy-service-577d6c549b-6qfcv    1/1     Running  
-
-  zookeeper-0                       1/1     Running 
+  [Результат развертывания](/schemas//задание3/Шаг2/7%20все%20поды.png)
 
   8. Добавим ingress
 
   - добавьте аддон
   ```bash
-  minikube addons enable ingress
+  minikube addons enable ingress - готово
   ```
   ```bash
-  kubectl apply -f src/kubernetes/ingress.yaml
+  kubectl apply -f src/kubernetes/ingress.yaml - готово
   ```
-  9. Добавьте в /etc/hosts
+  9. Добавьте в /etc/hosts - готово
   127.0.0.1 cinemaabyss.example.com
 
   10. Вызовите
   ```bash
-  minikube tunnel
-  ```
-  11. Вызовите https://cinemaabyss.example.com/api/movies
+  minikube tunnel - готово
+    ```
+  11. Вызовите https://cinemaabyss.example.com/api/movies - готово
   Вы должны увидеть вывод списка фильмов
   Можно поэкспериментировать со значением   MOVIES_MIGRATION_PERCENT в src/kubernetes/configmap.yaml и убедится, что вызовы movies уходят полностью в новый сервис
 
@@ -182,10 +165,15 @@ api-tests при сборке отрабатывают успешно при о�
    npm run test:kubernetes
   ```
   Часть тестов с health-чек упадет, но создание событий отработает.
-  Откройте логи event-service и сделайте скриншот обработки событий
+  [Результат выполнения тестов в k8s](/schemas/задание3/Шаг2/результат%20работы%20тестов%20k8s.png)
+
 
 #### Шаг 3
-Добавьте сюда скриншота вывода при вызове https://cinemaabyss.example.com/api/movies и  скриншот вывода event-service после вызова тестов.
+Cкриншот вывода при вызове https://cinemaabyss.example.com/api/movies 
+[Результат получения списка фильмов](/schemas/задание3/Шаг3/список%20фильмов%20minikube.png)
+
+Скриншот вывода event-service после вызова тестов
+[Результат получения списка фильмов](/schemas/задание3/Шаг3/логи%20event-service%20после%20запуска%20тестов.png)
 
 
 ## Задание 4
