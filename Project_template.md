@@ -4,7 +4,7 @@
 
 1. Спроектируйте to be архитектуру КиноБездны, разделив всю систему на отдельные домены 
 и организовав интеграционное взаимодействие и единую точку вызова сервисов.
-[Схема to-be](schemas/to-be.puml)
+[Схема to-be](schemas/задание1/to-be.puml)
 
 ## Задание 2
 
@@ -173,14 +173,14 @@ Cкриншот вывода при вызове https://cinemaabyss.example.com
 [Результат получения списка фильмов](/schemas/задание3/Шаг3/список%20фильмов%20minikube.png)
 
 Скриншот вывода event-service после вызова тестов
-[Результат получения списка фильмов](/schemas/задание3/Шаг3/логи%20event-service%20после%20запуска%20тестов.png)
+[Логи event-service после запуска](/schemas/задание3/Шаг3/логи%20event-service%20после%20запуска%20тестов.png)
 
 
 ## Задание 4
 Для простоты дальнейшего обновления и развертывания вам как архитектуру необходимо так же реализовать helm-чарты для прокси-сервиса и проверить работу 
 
 Для этого:
-1. Перейдите в директорию helm и отредактируйте файл values.yaml
+1. Перейдите в директорию helm и отредактируйте файл values.yaml - готово
 
 ```yaml
 # Proxy service configuration
@@ -205,13 +205,13 @@ proxyService:
 ```
 
 - Вместо ghcr.io/db-exp/cinemaabysstest/proxy-service напишите свой путь до образа для всех сервисов
-- для imagePullSecret проставьте свое значение (скопируйте из конфигурации kubernetes)
+- для imagePullSecret проставьте свое значение (скопируйте из конфигурации kubernetes) - готово
   ```yaml
   imagePullSecrets:
       dockerconfigjson: ewoJImF1dGhzIjogewoJCSJnaGNyLmlvIjogewoJCQkiYXV0aCI6ICJaR0l0Wlhod09tZG9jRjl2UTJocVZIa3dhMWhKVDIxWmFVZHJOV2hRUW10aFVXbFZSbTVaTjJRMFNYUjRZMWM9IgoJCX0KCX0sCgkiY3JlZHNTdG9yZSI6ICJkZXNrdG9wIiwKCSJjdXJyZW50Q29udGV4dCI6ICJkZXNrdG9wLWxpbnV4IiwKCSJwbHVnaW5zIjogewoJCSIteC1jbGktaGludHMiOiB7CgkJCSJlbmFibGVkIjogInRydWUiCgkJfQoJfSwKCSJmZWF0dXJlcyI6IHsKCQkiaG9va3MiOiAidHJ1ZSIKCX0KfQ==
   ```
 
-2. В папке ./templates/services заполните шаблоны для proxy-service.yaml и events-service.yaml (опирайтесь на свою kubernetes конфигурацию - смысл helm'а сделать шаблоны для быстрого обновления и установки)
+2. В папке ./templates/services заполните шаблоны для proxy-service.yaml и events-service.yaml (опирайтесь на свою kubernetes конфигурацию - смысл helm'а сделать шаблоны для быстрого обновления и установки) - готово
 
 ```yaml
 template:
@@ -232,7 +232,7 @@ kubectl delete  namespace cinemaabyss
 ```
 Запустите 
 ```bash
-helm install cinemaabyss .\src\kubernetes\helm --namespace cinemaabyss --create-namespace
+helm install cinemaabyss .\src\kubernetes\helm --namespace cinemaabyss --create-namespace - готово
 ```
 Если в процессе будет ошибка
 ```code
@@ -246,10 +246,9 @@ kubectl get pods -n cinemaabyss
 minikube tunnel
 ```
 
-Потом вызовите 
-https://cinemaabyss.example.com/api/movies
-и приложите скриншот развертывания helm и вывода https://cinemaabyss.example.com/api/movies
-
+[https://cinemaabyss.example.com/api/movies](/schemas/задание4/скриншот%20сайта%20через%20helm.png)
+[Cкриншот развертывания helm](/schemas/задание4/скриншот%20развертывания%20helm.png)
+[Поды созданные после запуска helm](/schemas/задание4/поды%20созданные%20на%20основе%20helm.png)
 
 # Задание 5
 Компания планирует активно развиваться и для повышения надежности, безопасности, реализации сетевых паттернов типа Circuit Breaker и канареечного деплоя вам как архитектору необходимо развернуть istio и настроить circuit breaker для monolith и movies сервисов.
